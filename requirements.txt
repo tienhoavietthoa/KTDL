@@ -1,0 +1,11 @@
+networkx>=3.2
+numpy>=1.26
+pandas>=2.1
+matplotlib>=3.8
+seaborn>=0.13
+scikit-learn>=1.4
+python-louvain>=0.16
+
+PyQt6>=6.6
+PyQt6-Qt6>=6.6
+PyQt6-sip>=13.6
