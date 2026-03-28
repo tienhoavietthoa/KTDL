@@ -5,11 +5,6 @@ __pycache__/
 *.pyc
 .DS_Store
 
-# data lớn (SNAP) - khuyến nghị không commit
-data/raw/facebook_combined.txt
-data/raw/facebook_combined.txt.gz
-data/processed/karate.graphml
-data/processed/karate_clean.graphml
 # output có thể giữ tuỳ bạn; nếu quá nặng thì ignore
 # outputs/
 EOF

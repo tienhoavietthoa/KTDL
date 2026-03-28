@@ -35,8 +35,8 @@ from PyQt6.QtWidgets import (
 
 
 # -------------------- Title / Topic --------------------
-TOPIC_TITLE = "PHÂN TÍCH MẠNG XÃ HỘI & PHÁT HIỆN CỘNG ĐỒNG"
-TOPIC_SUBTITLE = "Ứng dụng: Gợi ý kết bạn theo Cộng đồng + Bạn chung (Jaccard)"
+TOPIC_TITLE = "PHÁT HIỆN CỘNG ĐỒNG VÀ ỨNG DỤNG GỢI Ý KẾT NỐI TRONG MẠNG XÃ HỘI"
+TOPIC_SUBTITLE = "Ứng dụng: PHÁT HIỆN CỘNG ĐỒNG VÀ ỨNG DỤNG GỢI Ý KẾT NỐI TRONG MẠNG XÃ HỘI"
 DATASET_LABEL = "Dataset: SNAP Facebook (facebook_combined)"
 
 
