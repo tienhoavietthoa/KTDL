@@ -7,6 +7,7 @@ import pandas as pd
 
 from src.utils import ensure_dirs, append_text
 from src.pipeline import run_once
+from src.visualize import plot_metrics_comparison
 
 
 def parse_args():
@@ -39,9 +40,20 @@ def main():
             gn_k_max=args.gn_kmax,
             lp_runs=args.lp_runs if label == "Label Propagation" else 1,
         )
-        print(f"\n=== {res.algorithm} ===")
+        print(f"\n{'='*60}")
+        print(f"  {res.algorithm}")
+        print(f"{'='*60}")
         print(f"Runtime (sec)    : {res.runtime_sec:.6f}")
         print(f"Modularity Q     : {res.modularity_Q:.6f}")
+        
+        # ✨ THÊM MỚI: Ground truth metrics
+        if res.nmi is not None:
+            print(f"NMI (ground truth): {res.nmi:.6f}")
+        if res.ari is not None:
+            print(f"ARI (ground truth): {res.ari:.6f}")
+        if res.purity is not None:
+            print(f"Purity (ground tr): {res.purity:.6f}")
+        
         if res.modularity_mean is not None:
             print(f"LP Q mean±std    : {res.modularity_mean:.6f} ± {res.modularity_std:.6f} (runs={res.stability_runs})")
         print(f"#Clusters        : {res.n_clusters}")
@@ -67,10 +79,19 @@ def main():
         results.append(run_and_print("Girvan-Newman"))
         results.append(run_and_print("Label Propagation"))
 
+    # ✨ THÊM MỚI: Plot metrics comparison
+    if len(results) > 1:
+        print("\n📊 Plotting metrics comparison...")
+        plot_metrics_comparison(
+            results,
+            paths["out_figures"] / "metrics_comparison.png"
+        )
+
+    # Save summary
     df = pd.DataFrame([r.__dict__ for r in results])
     summary_path = paths["out_tables"] / "metrics_summary_cli.csv"
     df.to_csv(summary_path, index=False, encoding="utf-8")
-    print(f"\nSummary saved: {summary_path}")
+    print(f"\n✓ Summary saved: {summary_path}\n")
 
 
 if __name__ == "__main__":

@@ -83,3 +83,6 @@
 ## Desktop demo run
 - Algorithm: Louvain
 - Outputs: D:\Projecthk8\KTDLproject\outputs\figures\louvain_network.png, D:\Projecthk8\KTDLproject\outputs\tables\louvain_membership.csv
+
+# CLI run (2026-03-28)
+- algo=all, seed=42, gn_kmin=2, gn_kmax=8, lp_runs=10
