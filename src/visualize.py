@@ -6,6 +6,7 @@ from typing import Dict, List
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import pandas as pd
 from collections import Counter
 
 
@@ -199,7 +200,11 @@ def plot_adjacency_heatmap(
     out_path: Path
 ) -> None:
     """
-    ✨ THÊMMỚI: Vẽ heatmap ma trận kề (nodes sắp theo community)
+    ✨ HEATMAP: Vẽ ma trận kề (nodes sắp theo community)
+    
+    Giúp visual check: cạnh trong vs ngoài cộng đồng
+    - Các khối đường chéo = edges trong community (tốt)
+    - Phần còn lại = edges giữa communities (xấu)
     """
     import seaborn as sns
     
@@ -219,7 +224,7 @@ def plot_adjacency_heatmap(
     plt.figure(figsize=(12, 10))
     sns.heatmap(adj, cmap='Blues', cbar_kws={'label': 'Edge exists'}, square=True)
     
-    # Add community separators
+    # Add community separators (red lines)
     current_comm = None
     prev_idx = 0
     for i, node in enumerate(sorted_nodes):
@@ -232,10 +237,51 @@ def plot_adjacency_heatmap(
     
     plt.title(f'{algorithm}: Adjacency Matrix (Nodes sorted by Community)', 
              fontsize=14, fontweight='bold')
-    plt.xlabel('Node ID', fontsize=11)
-    plt.ylabel('Node ID', fontsize=11)
+    plt.xlabel('Node ID', fontsize=11, fontweight='bold')
+    plt.ylabel('Node ID', fontsize=11, fontweight='bold')
     plt.tight_layout()
     plt.savefig(out_path, dpi=200, bbox_inches='tight')
     plt.close()
     
     print(f"✓ Saved: {out_path}")
+
+
+def plot_node_feature_correlation(
+    node_features: pd.DataFrame,
+    algorithm: str,
+    out_path: Path
+) -> None:
+    """
+    ✨ CORRELATION: Vẽ heatmap tương quan giữa các centrality measures
+    
+    Features:
+    - degree, pagerank, betweenness, closeness, clustering_coeff
+    
+    Giúp hiểu: các metrics có liên quan không?
+    """
+    import seaborn as sns
+    
+    # Select numeric columns
+    numeric_cols = ['degree', 'pagerank', 'betweenness', 'closeness', 'clustering_coeff']
+    corr_matrix = node_features[numeric_cols].corr()
+    
+    plt.figure(figsize=(8, 7))
+    sns.heatmap(
+        corr_matrix,
+        annot=True,  # Show correlation values
+        fmt='.2f',
+        cmap='coolwarm',
+        center=0,
+        square=True,
+        cbar_kws={'label': 'Correlation Coefficient'},
+        vmin=-1, vmax=1
+    )
+    
+    plt.title(f'{algorithm}: Node Centrality Correlation Matrix', 
+             fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=200, bbox_inches='tight')
+    plt.close()
+    
+    print(f"✓ Saved: {out_path}")
+    print(f"\nCorrelation Matrix:\n{corr_matrix}\n")

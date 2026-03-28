@@ -46,7 +46,6 @@ def main():
         print(f"Runtime (sec)    : {res.runtime_sec:.6f}")
         print(f"Modularity Q     : {res.modularity_Q:.6f}")
         
-        # ✨ THÊM MỚI: Ground truth metrics
         if res.nmi is not None:
             print(f"NMI (ground truth): {res.nmi:.6f}")
         if res.ari is not None:
@@ -65,6 +64,9 @@ def main():
         print(f" - {res.membership_csv}")
         print(f" - {res.profiles_csv}")
         print(f" - {res.centrality_csv}")
+        print(f" - {res.heatmap_png}")
+        print(f" - {res.correlation_png}")
+        print(f" - {res.bridge_nodes_csv}")
         return res
 
     results = []
@@ -79,7 +81,7 @@ def main():
         results.append(run_and_print("Girvan-Newman"))
         results.append(run_and_print("Label Propagation"))
 
-    # ✨ THÊM MỚI: Plot metrics comparison
+    # Plot metrics comparison
     if len(results) > 1:
         print("\n📊 Plotting metrics comparison...")
         plot_metrics_comparison(

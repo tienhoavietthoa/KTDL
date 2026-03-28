@@ -7,11 +7,16 @@ from typing import Dict, Optional, Tuple
 
 import networkx as nx
 import numpy as np
+import pandas as pd
 
 from src.algorithms.girvan_newman import run_girvan_newman_best_k
 from src.algorithms.label_propagation import run_label_propagation
 from src.algorithms.louvain import run_louvain
-from src.analyze_community import community_profile_table
+from src.analyze_community import (
+    community_profile_table,
+    detect_bridge_nodes,
+    analyze_inter_community_edges
+)
 from src.data_collect import collect_karate_club
 from src.insights import node_centrality_table
 from src.metrics import (
@@ -27,6 +32,8 @@ from src.visualize import (
     plot_gn_modularity_curve,
     plot_metrics_comparison,
     plot_community_sizes,
+    plot_adjacency_heatmap,
+    plot_node_feature_correlation,
 )
 
 
@@ -43,7 +50,7 @@ class RunResult:
     davies_bouldin: float
     runtime_sec: float
     
-    # ✨ THÊM MỚI: Ground truth metrics
+    # Ground truth metrics
     nmi: Optional[float] = None
     ari: Optional[float] = None
     purity: Optional[float] = None
@@ -53,6 +60,11 @@ class RunResult:
     network_png: Optional[str] = None
     profiles_csv: Optional[str] = None
     centrality_csv: Optional[str] = None
+    
+    # ✨ NEW: Advanced analysis
+    heatmap_png: Optional[str] = None
+    correlation_png: Optional[str] = None
+    bridge_nodes_csv: Optional[str] = None
     
     # Stability (for LP)
     stability_runs: int = 1
@@ -148,7 +160,7 @@ def run_once(
     # 5. Compute clustering metrics
     metrics = compute_clustering_metrics(G, membership, node_features)
     
-    # 6. ✨ THÊMMỚI: Compute ground truth metrics
+    # 6. Compute ground truth metrics
     print("🎯 Computing ground truth comparison...")
     try:
         gt_metrics = compute_ground_truth_metrics(membership, nodes_csv)
@@ -178,24 +190,51 @@ def run_once(
     centrality_csv_path = out_tables / f"{algo_name}_node_centrality.csv"
     centrality_df.to_csv(centrality_csv_path, index=False)
     
-    # 11. ✨ THÊMMỚI: GN specific - plot Q vs K curve
+    # 11. GN specific - plot Q vs K curve
     if algorithm == "Girvan-Newman" and gn_records:
         gn_curve_path = out_figures / "gn_modularity_by_k.png"
         plot_gn_modularity_curve(gn_records, gn_curve_path)
         
         # Save records to CSV
         gn_csv_path = out_tables / "gn_modularity_by_k.csv"
-        import pandas as pd
         pd.DataFrame(gn_records).to_csv(gn_csv_path, index=False)
     
-    # 12. ✨ THÊMMỚI: Community size distribution
+    # 12. Community size distribution
     comm_size_path = out_figures / f"{algo_name}_community_sizes.png"
     plot_community_sizes(membership, algorithm, comm_size_path)
+    
+    # 13. ✨ Adjacency heatmap
+    print("🔥 Plotting adjacency heatmap...")
+    heatmap_path = out_figures / f"{algo_name}_adjacency_heatmap.png"
+    plot_adjacency_heatmap(G, membership, algorithm, heatmap_path)
+    
+    # 14. ✨ Node feature correlation
+    print("📈 Plotting feature correlation...")
+    corr_path = out_figures / f"{algo_name}_feature_correlation.png"
+    plot_node_feature_correlation(node_features, algorithm, corr_path)
+    
+    # 15. ✨ Bridge nodes analysis
+    print("🌉 Detecting bridge nodes...")
+    bridge_df = detect_bridge_nodes(G, membership, top_k=5)
+    bridge_path = out_tables / f"{algo_name}_bridge_nodes.csv"
+    bridge_df.to_csv(bridge_path, index=False)
+    print(f"✓ Saved: {bridge_path}")
+    print(f"\nTop 5 Bridge Nodes:")
+    print(bridge_df.to_string(index=False))
+    
+    # 16. ✨ Inter-community edges
+    print("\n📊 Analyzing inter-community edges...")
+    inter_stats = analyze_inter_community_edges(G, membership)
+    print(f"   Intra-edges (within communities): {inter_stats['intra_edges']}")
+    print(f"   Inter-edges (between communities): {inter_stats['inter_edges']}")
+    print(f"   Intra ratio: {inter_stats['intra_ratio']:.2%}")
+    print(f"   Inter ratio: {inter_stats['inter_ratio']:.2%}")
+    print(f"   Inter-edges by pair: {inter_stats['inter_by_pair']}")
     
     end_time = time.perf_counter()
     runtime = end_time - start_time
     
-    # 13. Create result object
+    # 17. Create result object
     result = RunResult(
         algorithm=algorithm,
         modularity_Q=float(modularity_Q),
@@ -211,6 +250,9 @@ def run_once(
         network_png=str(network_png_path),
         profiles_csv=str(profiles_csv_path),
         centrality_csv=str(centrality_csv_path),
+        heatmap_png=str(heatmap_path),
+        correlation_png=str(corr_path),
+        bridge_nodes_csv=str(bridge_path),
         stability_runs=lp_runs if algorithm == "Label Propagation" else 1,
         modularity_mean=stability_mean,
         modularity_std=stability_std,

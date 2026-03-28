@@ -86,3 +86,6 @@
 
 # CLI run (2026-03-28)
 - algo=all, seed=42, gn_kmin=2, gn_kmax=8, lp_runs=10
+
+# CLI run (2026-03-28)
+- algo=all, seed=42, gn_kmin=2, gn_kmax=8, lp_runs=10

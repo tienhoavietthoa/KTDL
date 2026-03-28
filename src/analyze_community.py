@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Dict
+from collections import Counter
 
 import networkx as nx
 import pandas as pd
@@ -53,11 +54,14 @@ def detect_bridge_nodes(
     top_k: int = 5
 ) -> pd.DataFrame:
     """
-    ✨ THÊMMỚI: Tìm bridge nodes (nối các communities lại)
+    ✨ BRIDGE NODES: Tìm nodes nối nhiều communities nhất
     
-    Bridge node: node có nhiều neighbors từ communities khác nhất
+    Bridge node = node có nhiều neighbors từ communities khác
+    
+    Ứng dụng:
+    - Identify influential users giữa groups
+    - Tìm bottlenecks trong network
     """
-    from collections import Counter
     
     bridge_scores = {}
     
@@ -83,6 +87,7 @@ def detect_bridge_nodes(
             'node_id': int(node),
             'community_id': int(membership[node]),
             'bridge_score': int(score),
+            'degree': int(G.degree(node)),
             'connected_to_comms': len(neighbor_comms),
             'neighbor_communities': str(dict(neighbor_comms))
         })
@@ -92,15 +97,14 @@ def detect_bridge_nodes(
 
 def analyze_inter_community_edges(G: nx.Graph, membership: Dict[int, int]) -> dict:
     """
-    ✨ THÊMMỚI: Tính thống kê cạnh giữa các cộng đồng
+    ✨ INTER-COMMUNITY STATS: Phân tích cạnh giữa các cộng đồng
     
     Returns:
         {
-            'intra_edges': number of edges within communities,
-            'inter_edges': number of edges between communities,
-            'intra_ratio': intra / total,
-            'inter_ratio': inter / total,
-            'inter_by_pair': {(comm1, comm2): count}
+            'intra_edges': cạnh nội bộ,
+            'inter_edges': cạnh giữa communities,
+            'intra_ratio': phần trăm nội bộ,
+            'inter_by_pair': cạnh giữa mỗi pair communities
         }
     """
     from collections import defaultdict
